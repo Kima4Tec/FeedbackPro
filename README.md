@@ -223,8 +223,8 @@ void loop() {
 }
 ```
 
-Vi flettede de to programmer sammen, så knaptryk tændte led og samtidig og sendte besked til MQTT-server, om hvilken knap er trykket. 
-Sidst har vi tilføjet en registrering af antallet af de forskellige knaptryk bliver talt og sendt til MQTT-serveren. 
+Vi flettede de to programmer sammen, så knaptryk tændte led og samtidig og sender besked til MQTT-serveren, hvilken knap er trykket. 
+Sidst har vi tilføjet en registrering af antallet af de forskellige knaptryk, så de bliver talt og sendt til MQTT-serveren. 
 Ved at gemme knap-tællerne i RTC_DATA_ATTR variabler overlever de deep sleep. 
 
 Her er den afsluttede kode:
