@@ -1,5 +1,86 @@
 # Smiley Feedback Konsol – IoT Projekt
+## Logbog
+### Dag 1
+Opstart og genopfriskning af IoT. En knap, der tænder en ledlampe.
 
+### Dag 2
+Udvidelse af board til fire knapper og fire leds, der tænder ift det tilhørende knaptryk.
+
+Kode til fire knapper
+```
+#include "Arduino.h"
+#include "driver/rtc_io.h"
+
+#define BIT(x) (1ULL << x)
+
+// Knapper (brug stabile RTC GPIOs)
+#define BTN1 GPIO_NUM_25
+#define BTN2 GPIO_NUM_32
+#define BTN3 GPIO_NUM_33
+#define BTN4 GPIO_NUM_27
+
+// LEDs
+#define LED1 2
+#define LED2 4
+#define LED3 18
+#define LED4 19
+
+uint64_t bitmask =
+  BIT(BTN1) |
+  BIT(BTN2) |
+  BIT(BTN3) |
+  BIT(BTN4);
+
+void setup() {
+  Serial.begin(115200);
+  delay(200);
+
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(LED4, OUTPUT);
+
+  digitalWrite(LED1, LOW);
+  digitalWrite(LED2, LOW);
+  digitalWrite(LED3, LOW);
+  digitalWrite(LED4, LOW);
+
+  esp_sleep_wakeup_cause_t reason = esp_sleep_get_wakeup_cause();
+
+  if (reason == ESP_SLEEP_WAKEUP_EXT1) {
+
+    uint64_t wakePins = esp_sleep_get_ext1_wakeup_status();
+
+    if (wakePins & BIT(BTN1)) digitalWrite(LED1, HIGH);
+    if (wakePins & BIT(BTN2)) digitalWrite(LED2, HIGH);
+    if (wakePins & BIT(BTN3)) digitalWrite(LED3, HIGH);
+    if (wakePins & BIT(BTN4)) digitalWrite(LED4, HIGH);
+  }
+
+  // Stabil input (vigtigt)
+  rtc_gpio_pulldown_en(BTN1);
+  rtc_gpio_pulldown_en(BTN2);
+  rtc_gpio_pulldown_en(BTN3);
+  rtc_gpio_pulldown_en(BTN4);
+
+  rtc_gpio_pullup_dis(BTN1);
+  rtc_gpio_pullup_dis(BTN2);
+  rtc_gpio_pullup_dis(BTN3);
+  rtc_gpio_pullup_dis(BTN4);
+
+  esp_sleep_enable_ext1_wakeup(bitmask, ESP_EXT1_WAKEUP_ANY_HIGH);
+
+  Serial.println("Going to sleep...");
+  delay(1000);
+
+  esp_deep_sleep_start();
+}
+
+void loop() {}
+```
+
+
+# Opgaven:
 ## Motivation
 
 Smiley feedback konsollen er en sjov og dagligdags anordning, som vi genkender fra oplevelser i banken, borgerservice, varehuse og sundhedscentre.
