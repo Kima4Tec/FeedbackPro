@@ -1,4 +1,3 @@
-```md
 # Smiley Feedback Konsol – IoT Projekt
 
 ## Motivation
@@ -136,4 +135,3 @@ For information om den lokale MQTT-server, se:
 - Lokal MQTT server
 
 Her findes også eksempler på kode, som sender beskeder med MQTT.
-```
