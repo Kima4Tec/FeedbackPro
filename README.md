@@ -13,7 +13,7 @@ Kode til fire knapper
 
 #define BIT(x) (1ULL << x)
 
-// Knapper (brug stabile RTC GPIOs)
+// Buttons - using stabil RTC GPIOs
 #define BTN1 GPIO_NUM_25
 #define BTN2 GPIO_NUM_32
 #define BTN3 GPIO_NUM_33
