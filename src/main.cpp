@@ -21,9 +21,9 @@
 #define LEDGREEN  18
 #define LEDBLUE   19
 
-// ===================== MQTT =====================
+// ===================== MQTT & WIFI & tls=====================
 static WiFiClientSecure tlsClient;
-static PubSubClient     mqttClient(tlsClient);  // ét navn, brugt konsekvent
+static PubSubClient     mqttClient(tlsClient);
 
 uint64_t bitmask =
   BIT(BTNBLUE)   |
@@ -32,6 +32,10 @@ uint64_t bitmask =
   BIT(BTNRED);
 
 RTC_DATA_ATTR int bootCount = 0;
+RTC_DATA_ATTR int countRed    = 0;
+RTC_DATA_ATTR int countYellow = 0;
+RTC_DATA_ATTR int countGreen  = 0;
+RTC_DATA_ATTR int countBlue   = 0;
 
 // ===================== WIFI =====================
 void initWiFi() {
@@ -63,32 +67,29 @@ void reconnectMQTT() {
 }
 
 void print_GPIO_wake_up(uint64_t wakePins) {
-  // Find hvilken smiley der blev trykket
   const char* smiley = "";
-  if (wakePins & BIT(BTNRED))    smiley = "Meget sur 😠";
-    if (wakePins & BIT(BTNYELLOW)) smiley = "Sur 🙁";
-  if (wakePins & BIT(BTNGREEN))  smiley = "Glad 🙂";
-  if (wakePins & BIT(BTNBLUE))   smiley = "Meget glad 😄";
+  if (wakePins & BIT(BTNRED))    { smiley = "Meget sur 😠";  countRed++;    }
+  if (wakePins & BIT(BTNYELLOW)) { smiley = "Sur 🙁";        countYellow++; }
+  if (wakePins & BIT(BTNGREEN))  { smiley = "Glad 🙂";       countGreen++;  }
+  if (wakePins & BIT(BTNBLUE))   { smiley = "Meget glad 😄"; countBlue++;   }
 
-  // Hent timestamp
   struct tm timeinfo;
   char timestamp[30] = "unknown";
-  if (getLocalTime(&timeinfo)) {
+  if (getLocalTime(&timeinfo))
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &timeinfo);
-  }
-  char buttonCount[10];
-  sprintf(buttonCount, "%d", bootCount);
 
-  // Byg JSON
   JsonDocument doc;
-  doc["button"]    = smiley;
-  doc["timestamp"] = timestamp;
-  doc["buttonCount"] = buttonCount;
+  doc["button"]      = smiley;
+  doc["timestamp"]   = timestamp;
+  doc["bootCount"]   = bootCount;
+  doc["countRed"]    = countRed;
+  doc["countYellow"] = countYellow;
+  doc["countGreen"]  = countGreen;
+  doc["countBlue"]   = countBlue;
 
-  char jsonBuffer[128];
+  char jsonBuffer[200];
   serializeJson(doc, jsonBuffer);
 
-  // Publish
   mqttClient.publish("/devices/device03/GroupKMT", jsonBuffer);
   Serial.println(jsonBuffer);
 }
