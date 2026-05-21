@@ -21,9 +21,9 @@
 #define LEDGREEN  18
 #define LEDBLUE   19
 
-// ===================== MQTT & WIFI & tls=====================
+// ===================== MQTT =====================
 static WiFiClientSecure tlsClient;
-static PubSubClient     mqttClient(tlsClient);
+static PubSubClient     mqttClient(tlsClient);  // ét navn, brugt konsekvent
 
 uint64_t bitmask =
   BIT(BTNBLUE)   |
@@ -81,11 +81,10 @@ void print_GPIO_wake_up(uint64_t wakePins) {
   JsonDocument doc;
   doc["button"]      = smiley;
   doc["timestamp"]   = timestamp;
-  doc["bootCount"]   = bootCount;
-  doc["countRed"]    = countRed;
-  doc["countYellow"] = countYellow;
-  doc["countGreen"]  = countGreen;
-  doc["countBlue"]   = countBlue;
+  doc["Meget sur"]    = countRed;
+  doc["Sur"] = countYellow;
+  doc["Glad"]  = countGreen;
+  doc["Meget glad"]   = countBlue;
 
   char jsonBuffer[200];
   serializeJson(doc, jsonBuffer);
