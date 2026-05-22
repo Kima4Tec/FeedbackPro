@@ -417,7 +417,7 @@ void setup() {
 void loop() {}
 ```
 
-
+## Uddybende og løbende logbog
 ```
 Vi tog udgangspunkt i Sørens kode ift. kode og billedopsætning.
 
