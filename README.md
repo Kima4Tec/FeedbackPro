@@ -464,6 +464,30 @@ installeret en ekstra extension i Visual Studio Code, kaldet C/C++ Extension Pac
 Vi tilføjede output tekst for hver knap, med rigtig glad på blå, indtil rigtig sur på rød, i rækkefølgen blå --> grøn --> gul --> rød
 ```
 
+#  ESP32 strømforbrug
+
+## 1. Normal drift (uden deep sleep)
+
+Når ESP32 kører kode + WiFi:
+
+### Typisk forbrug:
+- CPU aktiv (uden WiFi): ~30–80 mA  
+- WiFi connected: ~80–240 mA  
+- Peaks (sending MQTT / scanning): op til ~300–400 mA  
+
+### MQTT + WiFi (realistisk gennemsnit):
+ca. **120–200 mA**
+
+---
+
+## 2. Deep sleep
+
+Når ESP32 sover og kun RTC er aktiv:
+
+### ESP32 chip alene:
+- ~5–20 µA (mikroampere)
+
+
 
 
 # Opgaven:
