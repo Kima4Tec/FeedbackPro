@@ -7,42 +7,44 @@
 #include "ca_cert.h"
 #include <ArduinoJson.h>
 
-#define BIT(x) (1ULL << x)
+#define BITMASK(x) (1ULL << x)
 
 // ===================== BUTTONS =====================
-#define BTNRED    GPIO_NUM_25 
-#define BTNGREEN  GPIO_NUM_32 
-#define BTNYELLOW GPIO_NUM_33 
-#define BTNBLUE   GPIO_NUM_35  
+#define BTNRED GPIO_NUM_25
+#define BTNGREEN GPIO_NUM_32
+#define BTNYELLOW GPIO_NUM_33
+#define BTNBLUE GPIO_NUM_35
 
 // ===================== LEDS =====================
-#define LEDRED    2
+#define LEDRED 2
 #define LEDYELLOW 4
-#define LEDGREEN  18
-#define LEDBLUE   19
+#define LEDGREEN 18
+#define LEDBLUE 19
 
 // ===================== MQTT =====================
 static WiFiClientSecure tlsClient;
-static PubSubClient     mqttClient(tlsClient);  // ét navn, brugt konsekvent
+static PubSubClient mqttClient(tlsClient); // ét navn, brugt konsekvent
 
 uint64_t bitmask =
-  BIT(BTNBLUE)   |
-  BIT(BTNGREEN)  |
-  BIT(BTNYELLOW) |
-  BIT(BTNRED);
+    BITMASK(BTNBLUE) |
+    BITMASK(BTNGREEN) |
+    BITMASK(BTNYELLOW) |
+    BITMASK(BTNRED);
 
 RTC_DATA_ATTR int bootCount = 0;
-RTC_DATA_ATTR int countRed    = 0;
+RTC_DATA_ATTR int countRed = 0;
 RTC_DATA_ATTR int countYellow = 0;
-RTC_DATA_ATTR int countGreen  = 0;
-RTC_DATA_ATTR int countBlue   = 0;
+RTC_DATA_ATTR int countGreen = 0;
+RTC_DATA_ATTR int countBlue = 0;
 
 // ===================== WIFI =====================
-void initWiFi() {
+void initWiFi()
+{
   WiFi.mode(WIFI_STA);
   WiFi.begin(SSID, WIFIPASSWORD);
   Serial.print("Connecting WiFi");
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     Serial.print(".");
     delay(500);
   }
@@ -50,14 +52,19 @@ void initWiFi() {
 }
 
 // ===================== MQTT RECONNECT =====================
-void reconnectMQTT() {
-  while (!mqttClient.connected()) {
+void reconnectMQTT()
+{
+  while (!mqttClient.connected())
+  {
     Serial.print("Connecting MQTT...");
     String clientId = "ESP32Client-" + String(random(0xffff), HEX);
 
-    if (mqttClient.connect(clientId.c_str(), MQTT_USER, MQTT_PASS)) {
+    if (mqttClient.connect(clientId.c_str(), MQTT_USER, MQTT_PASS))
+    {
       Serial.println("connected");
-    } else {
+    }
+    else
+    {
       Serial.print("failed, rc=");
       Serial.print(mqttClient.state());
       Serial.println(" retry in 5 sec");
@@ -66,12 +73,29 @@ void reconnectMQTT() {
   }
 }
 
-void print_GPIO_wake_up(uint64_t wakePins) {
-  const char* smiley = "";
-  if (wakePins & BIT(BTNRED))    { smiley = "Meget sur 😠";  countRed++;    }
-  if (wakePins & BIT(BTNYELLOW)) { smiley = "Sur 🙁";        countYellow++; }
-  if (wakePins & BIT(BTNGREEN))  { smiley = "Glad 🙂";       countGreen++;  }
-  if (wakePins & BIT(BTNBLUE))   { smiley = "Meget glad 😄"; countBlue++;   }
+void print_GPIO_wake_up(uint64_t wakePins)
+{
+  const char *smiley = "";
+  if (wakePins & BITMASK(BTNRED))
+  {
+    smiley = "Meget sur 😠";
+    countRed++;
+  }
+  if (wakePins & BITMASK(BTNYELLOW))
+  {
+    smiley = "Sur 🙁";
+    countYellow++;
+  }
+  if (wakePins & BITMASK(BTNGREEN))
+  {
+    smiley = "Glad 🙂";
+    countGreen++;
+  }
+  if (wakePins & BITMASK(BTNBLUE))
+  {
+    smiley = "Meget glad 😄";
+    countBlue++;
+  }
 
   struct tm timeinfo;
   char timestamp[30] = "unknown";
@@ -79,12 +103,12 @@ void print_GPIO_wake_up(uint64_t wakePins) {
     strftime(timestamp, sizeof(timestamp), "%Y-%m-%dT%H:%M:%S", &timeinfo);
 
   JsonDocument doc;
-  doc["button"]      = smiley;
-  doc["timestamp"]   = timestamp;
-  doc["Meget sur"]    = countRed;
+  doc["button"] = smiley;
+  doc["timestamp"] = timestamp;
+  doc["Meget sur"] = countRed;
   doc["Sur"] = countYellow;
-  doc["Glad"]  = countGreen;
-  doc["Meget glad"]   = countBlue;
+  doc["Glad"] = countGreen;
+  doc["Meget glad"] = countBlue;
 
   char jsonBuffer[200];
   serializeJson(doc, jsonBuffer);
@@ -94,16 +118,19 @@ void print_GPIO_wake_up(uint64_t wakePins) {
 }
 
 // ===================== TIME =====================
-void setTimezone(String timezone) {
+void setTimezone(String timezone)
+{
   setenv("TZ", timezone.c_str(), 1);
   tzset();
 }
 
-void initTime(String timezone) {
+void initTime(String timezone)
+{
   struct tm timeinfo;
   Serial.println("Setting up NTP time...");
   configTime(0, 0, "pool.ntp.org");
-  if (!getLocalTime(&timeinfo)) {
+  if (!getLocalTime(&timeinfo))
+  {
     Serial.println("Failed to get time");
     return;
   }
@@ -111,9 +138,11 @@ void initTime(String timezone) {
   setTimezone(timezone);
 }
 
-void printLocalTime() {
+void printLocalTime()
+{
   struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) {
+  if (!getLocalTime(&timeinfo))
+  {
     Serial.println("Failed to obtain time");
     return;
   }
@@ -121,20 +150,21 @@ void printLocalTime() {
 }
 
 // ===================== SETUP =====================
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   delay(200);
 
   // LEDs
-  pinMode(LEDRED,    OUTPUT);
+  pinMode(LEDRED, OUTPUT);
   pinMode(LEDYELLOW, OUTPUT);
-  pinMode(LEDGREEN,  OUTPUT);
-  pinMode(LEDBLUE,   OUTPUT);
+  pinMode(LEDGREEN, OUTPUT);
+  pinMode(LEDBLUE, OUTPUT);
 
-  digitalWrite(LEDRED,    LOW);
+  digitalWrite(LEDRED, LOW);
   digitalWrite(LEDYELLOW, LOW);
-  digitalWrite(LEDGREEN,  LOW);
-  digitalWrite(LEDBLUE,   LOW);
+  digitalWrite(LEDGREEN, LOW);
+  digitalWrite(LEDBLUE, LOW);
 
   bootCount++;
   Serial.println("Boot: " + String(bootCount));
@@ -150,18 +180,23 @@ void setup() {
 
   esp_sleep_wakeup_cause_t reason = esp_sleep_get_wakeup_cause();
 
-  if (reason == ESP_SLEEP_WAKEUP_EXT1) {
+  if (reason == ESP_SLEEP_WAKEUP_EXT1)
+  {
     uint64_t wakePins = esp_sleep_get_ext1_wakeup_status();
 
     // Tænd LED
-    if (wakePins & BIT(BTNRED))    digitalWrite(LEDRED,    HIGH);
-    if (wakePins & BIT(BTNGREEN))  digitalWrite(LEDGREEN,  HIGH);
-    if (wakePins & BIT(BTNYELLOW)) digitalWrite(LEDYELLOW, HIGH);
-    if (wakePins & BIT(BTNBLUE))   digitalWrite(LEDBLUE,   HIGH);
+    if (wakePins & BITMASK(BTNRED))
+      digitalWrite(LEDRED, HIGH);
+    if (wakePins & BITMASK(BTNGREEN))
+      digitalWrite(LEDGREEN, HIGH);
+    if (wakePins & BITMASK(BTNYELLOW))
+      digitalWrite(LEDYELLOW, HIGH);
+    if (wakePins & BITMASK(BTNBLUE))
+      digitalWrite(LEDBLUE, HIGH);
 
     // Publish til MQTT
     print_GPIO_wake_up(wakePins);
-    delay(200);  // Giv MQTT tid til at sende inden sleep
+    delay(200); // Giv MQTT tid til at sende inden sleep - Led lystid
   }
 
   // Pull-down (vigtigt for EXT1)
