@@ -417,7 +417,75 @@ void setup() {
 void loop() {}
 ```
 
+## Uddybende og løbende logbog
+```
+Vi tog udgangspunkt i Sørens kode ift. kode og billedopsætning.
 
+Knapperne fordelte vi med lidt mellemrum, så breadboardelementerne ikke var klumpet sammen.
+
+Vi benyttede samme opsætning til de 4 knapper, som der blev brugt i den originale eksempelopgave, med 4.7k OHM resistorer til knapperne
+
+Vi spurgte ChatGPT om en fejl, vi havde, som omhandlede at alle knapperne udsendte "HIGH" signaler, og ChatGPT svarede at vi havde problemer med port 25 resistoren, som ikke
+skulle have en pulldown resistor.
+
+Vi fjernede resistoren koblet til port 25, og fjernede referencer til port 25 i koden.
+
+Vi havde stadig en fejl, der gav udtryk for at knapperne udsendte "HIGH" signaler, selvom der ikke bliver trykket på dem.
+
+Derfor gik vi tilbage til vores udgangspunkt, og tilføjede port 25 igen.
+
+Efter noget troubleshooting på den gamle opgave, gik det op for os, at vi havde sat vores strøm til de forkerte pins i knapperne.
+
+Vi rykkede vores strøm, og herefter fungerede knapperne, som startede ud i LOW state.
+
+Vores lamper registerede ikke knappetryk på dette tidspunkt, så vi fjernede alle breadboardelementer, der havde med lamperne at gøre.
+
+Efter vi havde fjernet alle elementerne, gik det op for os, at vi havde glemt at deklarere vores pinMode og digitalWrite metoder.
+
+Disse metoder blev tilføjet til programmet.
+
+Efter vi havde prøvekørt programmet med én lampe, med vores pinMode og digitalWrite metoder tilføjet, kunne vi se at lamperne registerer knappetryk korrekt - men vores kode var stadig
+sammensat sådan, at alle 4 knapper gav lys til den samme lampe.
+
+Vi tilføjede alle vores lamper igen, med dertilhørende ledningsopsætninger. Blå ledninger til ground forbindelse, til det korte ben, og det lange ben forbundet til portene 2, 4, 18
+og 19, og sørgede for at alle porte have en pinMode og digitalWrite metode i setup metoden.
+
+Efter prøvekørsel, var det kun den ene lampe der lyste, ved tryk på én af knapperne. De andre knapper satte ikke gang i lamperne.
+
+Vi ændrede nogle BIT opsætninger for knapperne i koden, for at få hver eneste knap til at tænde for hver deres respektiv lampe.
+
+Vi fandt koden fra vores gamle projekt fra H3 IOT, med henblik på at genbruge WiFi logikken.
+
+Vi klargjorde vores config.h header fil, og havde problemer med at inkorporere 2 libraries, ASPAsyncWebServer og AsyncTCP.
+
+Disse 2 libraries kunne ikke registeres, selvom de var tilføjet til vores platformio.ini fil, under lib_deps. Compileren kunne først genkende disse libraries efter vi havde
+installeret en ekstra extension i Visual Studio Code, kaldet C/C++ Extension Pack.  
+
+Vi tilføjede output tekst for hver knap, med rigtig glad på blå, indtil rigtig sur på rød, i rækkefølgen blå --> grøn --> gul --> rød
+```
+
+#  ESP32 strømforbrug
+
+## 1. Normal drift (uden deep sleep)
+
+Når ESP32 kører kode + WiFi:
+
+### Typisk forbrug:
+- CPU aktiv (uden WiFi): ~30–80 mA  
+- WiFi connected: ~80–240 mA  
+- Peaks (sending MQTT / scanning): op til ~300–400 mA  
+
+### MQTT + WiFi (realistisk gennemsnit):
+ca. **120–200 mA**
+
+---
+
+## 2. Deep sleep
+
+Når ESP32 sover og kun RTC er aktiv:
+
+### ESP32 chip alene:
+- ~5–20 µA (mikroampere)
 
 
 
